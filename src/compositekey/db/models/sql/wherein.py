@@ -17,9 +17,11 @@ class MultipleColumnsIN(object):
 
 
     def inner_sql(self, qn, connection):
+        print connection.vendor
         return service.get(connection.vendor, UseConcat)(self.cols, self.values, self.extra, self.alias).inner_sql(qn, connection)
 
     def as_sql(self, qn, connection):
+        print connection.vendor
         return service.get(connection.vendor, UseConcat)(self.cols, self.values, self.extra, self.alias).as_sql(qn, connection)
 
 
@@ -141,9 +143,17 @@ class UseTupleValues(UseTuple):
     DB2 (with values)
     """
     template = '%s IN (values %%s)'
+    
+class UseConcatCast(UseConcat):
+    """
+    MICROSOFT (SQL Server)
+    """
+    concat = "+"
+    cq = "'%s%s'"
 
 service["sqlite"] = UseConcat
 service["postgresql"] = UseConcatQuote
 service["mysql"] = UseTupleWithDummy
 service["oracle"] = UseTuple
 service["DB2"] = UseTupleValues
+service["microsoft"] = UseConcatCast
